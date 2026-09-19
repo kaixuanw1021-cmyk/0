@@ -1,0 +1,584 @@
+ 
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎲 終極公平隨機抽籤與輪盤系統</title>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #eab308;
+            --danger: #ef4444;
+        }
+
+        body {
+            font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 650px;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--text);
+            margin-top: 0;
+            font-size: 1.8rem;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+
+        /* 模式切換 Tabs */
+        .mode-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            background: #0f172a;
+            padding: 5px;
+            border-radius: 10px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        textarea, input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            background-color: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+
+        textarea {
+            height: 90px;
+            resize: vertical;
+        }
+
+        textarea:disabled, input:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .status-bar {
+            background: #334155;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            grid-column: span 2;
+        }
+
+        .btn-primary:hover:not(:disabled) { background-color: var(--primary-hover); }
+        .btn-secondary { background-color: #475569; color: white; }
+        .btn-secondary:hover:not(:disabled) { background-color: #334155; }
+        .btn-danger { background-color: var(--danger); color: white; }
+        .btn-danger:hover:not(:disabled) { background-color: #b91c1c; }
+
+        /* 特效舞台區 (抽籤模式) */
+        .stage-box {
+            background: radial-gradient(circle, #1e1b4b 0%, #0f172a 100%);
+            border: 2px solid #3730a3;
+            min-height: 120px;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .countdown {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #22d3ee;
+            margin-bottom: 5px;
+        }
+
+        .rolling-name {
+            font-size: 1.8rem;
+            color: var(--text-muted);
+            font-weight: bold;
+        }
+
+        .winner-list {
+            width: 100%;
+            margin-top: 15px;
+            text-align: left;
+        }
+
+        .winner-item {
+            background: rgba(234, 179, 8, 0.1);
+            border-left: 4px solid var(--accent);
+            padding: 10px;
+            margin: 6px 0;
+            border-radius: 0 6px 6px 0;
+            animation: fadeIn 0.4s ease-out forwards;
+            font-size: 1.1rem;
+        }
+
+        /* 輪盤專區 */
+        .wheel-container {
+            position: relative;
+            width: 280px;
+            height: 280px;
+            margin: 15px auto;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.4);
+        }
+
+        .wheel-pointer {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 12px solid transparent;
+            border-right: 12px solid transparent;
+            border-top: 24px solid var(--accent);
+            z-index: 10;
+            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.5));
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🎲 終極公平抽籤與輪盤系統</h1>
+    <div class="subtitle">密碼學安全隨機演算（雙模式互動版）</div>
+
+    <!-- 模式切換按鈕 -->
+    <div class="mode-tabs">
+        <button class="tab-btn active" onclick="switchMode('lottery')" id="tabLottery">🎯 模式一：多人抽籤</button>
+        <button class="tab-btn" onclick="switchMode('wheel')" id="tabWheel">🎡 模式二：幸運輪盤</button>
+    </div>
+
+    <div class="form-group">
+        <label for="namesInput">📝 參與名單 (名字請用「空格」隔開)：</label>
+        <textarea id="namesInput" placeholder="請在此輸入名單..."></textarea>
+    </div>
+
+    <div class="status-bar">
+        <span>剩餘可抽人數：<strong id="remCount" style="color:#22d3ee;">0</strong> 人</span>
+        <span>最初總人數：<strong id="initCount">0</strong> 人</span>
+    </div>
+
+    <!-- 抽出中獎人數 -->
+    <div class="form-group">
+        <label for="drawCount">🎯 這次想要抽出的【中獎人數】：</label>
+        <input type="number" id="drawCount" min="1" value="1">
+    </div>
+
+    <div class="btn-group">
+        <button class="btn-primary" id="actionBtn" onclick="startAction()">🎰 開始安全隨機抽籤</button>
+        <button class="btn-secondary" id="resetBtn" onclick="resetToOriginal()">↩ 重設人數 (原名單再抽)</button>
+        <button class="btn-danger" id="clearBtn" onclick="clearAll()">✍ 清空全新填寫</button>
+    </div>
+
+    <!-- 特效舞台 (抽籤模式) -->
+    <div class="stage-box" id="stageBox">
+        <div style="color: var(--text-muted);">🎉 請先填寫名單，準備開獎...</div>
+    </div>
+
+    <!-- 輪盤舞台 (輪盤模式) -->
+    <div class="stage-box" id="wheelStageBox" style="display: none;">
+        <div class="wheel-container">
+            <div class="wheel-pointer"></div>
+            <canvas id="wheelCanvas" width="300" height="300"></canvas>
+        </div>
+        <div id="wheelResult" style="width: 100%; font-size: 1.2rem; font-weight: bold; color: var(--accent); margin-top: 10px;"></div>
+    </div>
+</div>
+
+<script>
+    let originalNames = [];
+    let remainingNames = [];
+    let currentMode = 'lottery'; // 'lottery' 或 'wheel'
+    let wheelCurrentAngle = 0; // 記錄輪盤旋轉角度
+
+    // 初始化載入
+    window.onload = function() {
+        parseNames(true);
+        drawWheel();
+    };
+
+    document.getElementById('namesInput').addEventListener('input', function() {
+        parseNames(true);
+        drawWheel();
+    });
+
+    function parseNames(isNewInput = false) {
+        const rawText = document.getElementById('namesInput').value;
+        const list = rawText.split(/\s+/).filter(name => name.trim() !== "");
+        
+        if (isNewInput) {
+            originalNames = [...list];
+            remainingNames = [...list];
+            document.getElementById('initCount').innerText = originalNames.length;
+        }
+        document.getElementById('remCount').innerText = remainingNames.length;
+    }
+
+    // 模式切換
+    function switchMode(mode) {
+        currentMode = mode;
+        const tabLottery = document.getElementById('tabLottery');
+        const tabWheel = document.getElementById('tabWheel');
+        const stageBox = document.getElementById('stageBox');
+        const wheelStageBox = document.getElementById('wheelStageBox');
+        const actionBtn = document.getElementById('actionBtn');
+
+        if (mode === 'lottery') {
+            tabLottery.classList.add('active');
+            tabWheel.classList.remove('active');
+            stageBox.style.display = 'flex';
+            wheelStageBox.style.display = 'none';
+            actionBtn.innerText = "🎰 開始安全隨機抽籤";
+        } else {
+            tabWheel.classList.add('active');
+            tabLottery.classList.remove('active');
+            stageBox.style.display = 'none';
+            wheelStageBox.style.display = 'flex';
+            actionBtn.innerText = "🎡 開始旋轉輪盤";
+            drawWheel();
+        }
+    }
+
+    // 密碼學安全隨機數
+    function getRandomInt(max) {
+        const cryptoObj = window.crypto || window.msCrypto;
+        const range = max;
+        const maxUint32 = 4294967295;
+        const limit = maxUint32 - (maxUint32 % range);
+        const randomBytes = new Uint32Array(1);
+        while (true) {
+            cryptoObj.getRandomValues(randomBytes);
+            if (randomBytes[0] < limit) {
+                return randomBytes[0] % range;
+            }
+        }
+    }
+
+    function cryptoShuffle(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = getRandomInt(i + 1);
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    // 繪製輪盤
+    function drawWheel() {
+        const canvas = document.getElementById('wheelCanvas');
+        if (!canvas.getContext) return;
+        const ctx = canvas.getContext('2d');
+        const width = canvas.width;
+        const height = canvas.height;
+        const center = width / 2;
+        const radius = center - 10;
+
+        ctx.clearRect(0, 0, width, height);
+
+        if (remainingNames.length === 0) {
+            ctx.fillStyle = '#334155';
+            ctx.beginPath();
+            ctx.arc(center, center, radius, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = '14px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('無剩餘名單', center, center);
+            return;
+        }
+
+        const sliceAngle = (2 * Math.PI) / remainingNames.length;
+        const colors = ['#6366f1', '#3b82f6', '#0ea5e9', '#14b8a6', '#10b981', '#f59e0b', '#ef4444', '#ec4899', '#8b5cf6'];
+
+        ctx.save();
+        ctx.translate(center, center);
+        ctx.rotate(wheelCurrentAngle);
+        ctx.translate(-center, -center);
+
+        for (let i = 0; i < remainingNames.length; i++) {
+            const startAngle = i * sliceAngle;
+            const endAngle = (i + 1) * sliceAngle;
+
+            // 繪製扇形
+            ctx.beginPath();
+            ctx.moveTo(center, center);
+            ctx.arc(center, center, radius, startAngle, endAngle);
+            ctx.closePath();
+            ctx.fillStyle = colors[i % colors.length];
+            ctx.fill();
+            ctx.strokeStyle = '#0f172a';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // 繪製文字
+            ctx.save();
+            ctx.translate(center, center);
+            ctx.rotate(startAngle + sliceAngle / 2);
+            ctx.textAlign = 'right';
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 13px sans-serif';
+            ctx.fillText(remainingNames[i], radius - 15, 5);
+            ctx.restore();
+        }
+        ctx.restore();
+    }
+
+    // 統一執行按鈕
+    function startAction() {
+        if (currentMode === 'lottery') {
+            startLottery();
+        } else {
+            startWheel();
+        }
+    }
+
+    // 抽籤模式邏輯
+    async function startLottery() {
+        if (originalNames.length === 0) parseNames(true);
+        const drawCount = parseInt(document.getElementById('drawCount').value);
+        const stage = document.getElementById('stageBox');
+        const namesInput = document.getElementById('namesInput');
+
+        if (remainingNames.length === 0) { alert("⚠️ 錯誤：請先輸入參與名單！"); return; }
+        if (isNaN(drawCount) || drawCount <= 0 || drawCount > remainingNames.length) {
+            alert("⚠️ 錯誤：請輸入合法的中獎人數！"); return;
+        }
+
+        setControlsDisabled(true);
+
+        for (let d = 3; d > 0; d--) {
+            for (let r = 0; r < 20; r++) {
+                const randomIdx = Math.floor(Math.random() * remainingNames.length);
+                stage.innerHTML = `<div class="countdown">⏳ 倒數 ${d}...</div><div class="rolling-name">[ ${remainingNames[randomIdx]} ]</div>`;
+                await new Promise(res => setTimeout(res, 50));
+            }
+        }
+
+        remainingNames = cryptoShuffle(remainingNames);
+        const winners = remainingNames.splice(0, drawCount);
+
+        document.getElementById('remCount').innerText = remainingNames.length;
+        namesInput.value = remainingNames.join(" ");
+        drawWheel(); // 同步更新輪盤
+
+        stage.innerHTML = `<div style="color: #4ade80; font-weight: bold; font-size: 1.2rem; margin-bottom: 10px;">🎉 【 中獎名單如下 】</div><div class="winner-list" id="winnerList"></div>`;
+        const listContainer = document.getElementById('winnerList');
+        for (let i = 0; i < winners.length; i++) {
+            await new Promise(res => setTimeout(res, 400));
+            const item = document.createElement('div');
+            item.className = 'winner-item';
+            item.innerHTML = `✨ 第 <strong>${i + 1}</strong> 位幸運兒： 🌟 <strong>【 ${winners[i]}</strong> 】 🌟`;
+            listContainer.appendChild(item);
+        }
+
+        setControlsDisabled(false);
+    }
+
+    // 單次轉動輪盤的 Promise 封裝
+    function spinWheelOnce(drawIndex, totalDraws) {
+        return new Promise((resolve) => {
+            const totalItems = remainingNames.length;
+            const sliceAngle = (2 * Math.PI) / totalItems;
+            const winningIndex = getRandomInt(totalItems);
+
+            const targetSliceCenterAngle = winningIndex * sliceAngle + sliceAngle / 2;
+            const extraSpins = 4 * 2 * Math.PI; // 轉 4 圈
+            const finalAngle = extraSpins + (3 * Math.PI / 2 - targetSliceCenterAngle);
+
+            const startAngle = wheelCurrentAngle;
+            const distance = finalAngle - startAngle;
+            const duration = 2500; // 每次旋轉 2.5 秒
+            const startTime = performance.now();
+
+            function animateWheel(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const easeOut = 1 - Math.pow(1 - progress, 3);
+
+                wheelCurrentAngle = startAngle + distance * easeOut;
+                drawWheel();
+
+                if (progress < 1) {
+                    requestAnimationFrame(animateWheel);
+                } else {
+                    wheelCurrentAngle = finalAngle % (2 * Math.PI);
+                    const winner = remainingNames[winningIndex];
+
+                    // 移除中獎者
+                    remainingNames.splice(winningIndex, 1);
+                    document.getElementById('remCount').innerText = remainingNames.length;
+                    document.getElementById('namesInput').value = remainingNames.join(" ");
+                    drawWheel();
+
+                    resolve(winner);
+                }
+            }
+
+            requestAnimationFrame(animateWheel);
+        });
+    }
+
+    // 輪盤模式邏輯 (支援多位中獎者)
+    async function startWheel() {
+        if (originalNames.length === 0) parseNames(true);
+        const drawCount = parseInt(document.getElementById('drawCount').value);
+        const wheelResult = document.getElementById('wheelResult');
+
+        if (remainingNames.length === 0) { alert("⚠️ 錯誤：請先輸入參與名單！"); return; }
+        if (isNaN(drawCount) || drawCount <= 0 || drawCount > remainingNames.length) {
+            alert("⚠️ 錯誤：請輸入合法的中獎人數！"); return;
+        }
+
+        setControlsDisabled(true);
+        wheelResult.innerHTML = `<div style="color: #22d3ee; margin-bottom: 10px;">🎡 輪盤啟動中...</div><div class="winner-list" id="wheelWinnerList"></div>`;
+        const listContainer = document.getElementById('wheelWinnerList');
+
+        const winners = [];
+        for (let i = 0; i < drawCount; i++) {
+            const winner = await spinWheelOnce(i + 1, drawCount);
+            winners.push(winner);
+
+            const item = document.createElement('div');
+            item.className = 'winner-item';
+            item.innerHTML = `✨ 第 <strong>${i + 1}</strong> 位幸運兒： 🌟 <strong>【 ${winner} 】</strong> 🌟`;
+            listContainer.appendChild(item);
+
+            // 如果還有下一位，稍微停頓 0.8 秒再繼續轉
+            if (i < drawCount - 1) {
+                await new Promise(res => setTimeout(res, 800));
+            }
+        }
+
+        setControlsDisabled(false);
+    }
+
+    function setControlsDisabled(disabled) {
+        document.getElementById('actionBtn').disabled = disabled;
+        document.getElementById('resetBtn').disabled = disabled;
+        document.getElementById('clearBtn').disabled = disabled;
+        document.getElementById('namesInput').disabled = disabled;
+        const drawCountInput = document.getElementById('drawCount');
+        if(drawCountInput) drawCountInput.disabled = disabled;
+    }
+
+    function resetToOriginal() {
+        if (originalNames.length === 0) { alert("請先輸入名單！"); return; }
+        remainingNames = [...originalNames];
+        document.getElementById('namesInput').value = originalNames.join(" ");
+        parseNames(false);
+        drawWheel();
+        document.getElementById('stageBox').innerHTML = `<div style="color: #22d3ee;">🔄 已成功還原最初完整名單！</div>`;
+        document.getElementById('wheelResult').innerHTML = "";
+    }
+
+    function clearAll() {
+        originalNames = [];
+        remainingNames = [];
+        document.getElementById('namesInput').value = "";
+        document.getElementById('initCount').innerText = 0;
+        document.getElementById('remCount').innerText = 0;
+        drawWheel();
+        document.getElementById('stageBox').innerHTML = `<div style="color: var(--text-muted);">🎉 畫面已清空，等待新名單...</div>`;
+        document.getElementById('wheelResult').innerHTML = "";
+    }
+</script>
+
+</body>
+</html>
