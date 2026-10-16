@@ -305,12 +305,12 @@
 
     <div class="form-group probability-panel">
         <label for="probabilityInput">⚖️ 個別中獎權重（選填）</label>
-        <div class="probability-help">每行輸入「名字,百分比」，例如「小明,5」。百分比越高越容易被抽中；未設定或無效的數值會以 1% 計算。同名者共用同一設定。</div>
+        <div class="probability-help">每行輸入「名字,數值」，例如「小明,80」。不用把數字加總成 100；系統會依所有人的數值自動換算成總和 100% 的比例。例：小明 80、小華 50，會自動換算為 61.54% 與 38.46%。未設定或無效的數值以 1 計算；輸入 0 代表不會被抽中。同名者共用同一設定。</div>
         <textarea id="probabilityInput" placeholder="例如：\n小明,5\n小華,3\n小美,1" aria-label="個別中獎權重"></textarea>
-        <div class="probability-help">下方機率會依目前剩餘名單與權重即時更新。多人抽獎時顯示「下一位」的抽中機率；整輪中獎機率會另外估算。</div>
+        <div class="probability-help">下方會即時顯示自動換算後的比例；不論輸入數字加總低於、等於或高於 100，系統都會按比例換算。多人抽獎時也會估算本輪至少中一次的機率。</div>
         <div id="probabilityTableWrap" class="probability-table-wrap">
             <table class="probability-table">
-                <thead><tr><th>參與者</th><th>設定百分比</th><th>下一位抽中機率</th><th>本輪至少中一次機率（估算）</th></tr></thead>
+                <thead><tr><th>參與者</th><th>輸入數值</th><th>自動換算後比例</th><th>本輪至少中一次機率（估算）</th></tr></thead>
                 <tbody id="probabilityTableBody"><tr><td colspan="4">請先輸入名單</td></tr></tbody>
             </table>
         </div>
@@ -475,7 +475,7 @@
             const nameCell = document.createElement('td');
             nameCell.textContent = name;
             const weightCell = document.createElement('td');
-            weightCell.textContent = `${weights[i]}%`;
+            weightCell.textContent = `${weights[i]}`;
             const nextCell = document.createElement('td');
             nextCell.className = 'probability-value';
             nextCell.textContent = totalWeight > 0 ? `${(weights[i] / totalWeight * 100).toFixed(2)}%` : '0.00%';
