@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎲 零食抽籤系統  </title>
+    <title>🎲  抽籤系統  </title>
     <style>
         :root {
             --primary: #6366f1;
@@ -306,7 +306,7 @@
     <div class="form-group probability-panel">
         <label for="probabilityInput">⚖️ 個別中獎權重（選填）</label>
         <div class="probability-help">每行輸入「名字,百分比」，例如「小明,5」。百分比越高越容易被抽中；未設定或無效的數值會以 1% 計算。同名者共用同一設定。</div>
-        <textarea id="probabilityInput" placeholder="例如：\n小明,5\n小華,3\n小美,1" aria-label="個別中獎權重"></textarea>
+        <textarea id="probabilityInput" placeholder="例如：小明,5 小華,3 小美,1" aria-label="個別中獎權重"></textarea>
         <div class="probability-help">下方機率會依目前剩餘名單與權重即時更新。多人抽獎時顯示「下一位」的抽中機率；整輪中獎機率會另外估算。</div>
         <div id="probabilityTableWrap" class="probability-table-wrap">
             <table class="probability-table">
