@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎲 零食抽籤系統  </title>
+    <title>🎲  抽籤系統  </title>
     <style>
         :root {
             --primary: #6366f1;
@@ -306,7 +306,7 @@
     <div class="form-group probability-panel">
         <label for="probabilityInput">⚖️ 個別中獎權重（選填）</label>
         <div class="probability-help">每行輸入「名字,數值」，例如「小明,80」。不用把數字加總成 100；系統會依所有人的數值自動換算成總和 100% 的比例。例：小明 80、小華 50，會自動換算為 61.54% 與 38.46%。未設定或無效的數值以 1 計算；輸入 0 代表不會被抽中。同名者共用同一設定。</div>
-        <textarea id="probabilityInput" placeholder="例如：\n小明,5\n小華,3\n小美,1" aria-label="個別中獎權重"></textarea>
+        <textarea id="probabilityInput" placeholder="例如：小明,5 小華,3 小美,1" aria-label="個別中獎權重"></textarea>
         <div class="probability-help">下方會即時顯示自動換算後的比例；不論輸入數字加總低於、等於或高於 100，系統都會按比例換算。多人抽獎時也會估算本輪至少中一次的機率。</div>
         <div id="probabilityTableWrap" class="probability-table-wrap">
             <table class="probability-table">
